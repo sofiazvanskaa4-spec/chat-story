@@ -3,94 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <title>Chat Story</title>
-
 <style>
-body{
-  margin:0;
-  background:#000;
-  font-family:Arial, sans-serif;
-  color:#fff;
+body {
+  margin: 0;
+  background: #000;
+  font-family: Arial, sans-serif;
+  color: #fff;
+  overflow-x: hidden;
 }
 
-#chat{
-  padding:15px;
-  padding-bottom:120px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
+/* Фон на весь экран */
+#background {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -1;
 }
 
-/* ПУЗЫРЬ */
-.bubble{
-  display:flex;
-  gap:8px;
-  max-width:80%;
-  align-items:flex-end;
+/* Чат */
+#chat {
+  padding: 15px;
+  padding-bottom: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.left{align-self:flex-start;}
-.right{align-self:flex-end; flex-direction:row-reverse;}
-
-.msg{
-  background:#2a2a2a;
-  padding:10px 14px;
-  border-radius:14px;
-  font-size:15px;
-  line-height:1.4;
+/* Пузырь сообщений */
+.bubble {
+  display: flex;
+  gap: 8px;
+  max-width: 80%;
+  align-items: flex-end;
 }
 
-.right .msg{background:#5a2cff;}
+.left { align-self: flex-start; }
+.right { align-self: flex-end; flex-direction: row-reverse; }
 
-.avatar{
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  object-fit:cover;
+.msg {
+  background: #2a2a2a;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 15px;
+  line-height: 1.4;
 }
 
-/* МЕДИА В ЧАТЕ */
-video, img.media{
-  max-width:220px;
-  border-radius:14px;
+.right .msg { background: #5a2cff; }
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
-/* ВЫБОРЫ */
-#choices{
-  position:fixed;
-  bottom:0;
-  width:100%;
-  background:#111;
-  display:none;
-  flex-direction:column;
-  z-index:10;
+/* Медиа в чате */
+video, img.media {
+  max-width: 220px;
+  border-radius: 14px;
 }
 
-.choice{
-  padding:15px;
-  border-top:1px solid #222;
-  text-align:center;
-  cursor:pointer;
-}
-
-.choice:hover{background:#1b1b1b;}
-
-#tap{
-  position:fixed;
-  bottom:0;
-  width:100%;
-  padding:15px;
-  text-align:center;
-  background:#111;
-  cursor:pointer;
-  user-select:none;
+/* Кнопка "далее" */
+#tap {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  padding: 15px;
+  text-align: center;
+  background: #111;
+  cursor: pointer;
+  user-select: none;
 }
 </style>
 </head>
-
 <body>
 
+<div id="background"></div>
 <div id="chat"></div>
-<div id="choices"></div>
 <div id="tap">Нажми, чтобы продолжить</div>
 
 <script>
@@ -99,7 +90,7 @@ const characters = {
   ella:{name:"Элла",side:"right",avatar:"img/ella.jpg"},
   eric:{name:"Эрик",side:"left",avatar:"img/eric.jpg"},
   natalie:{name:"Натали",side:"left",avatar:"img/natalie.jpg"},
-  yan: { name:"Ян", side:"left", avatar:"img/yan.jpg" },
+  yan:{name:"Ян",side:"left",avatar:"img/yan.jpg"},
   kate:{name:"Кейт",side:"left",avatar:"img/kate.jpg"},
   michael:{name:"Майкл",side:"left",avatar:"img/michael.jpg"},
   father:{name:"Папа",side:"left",avatar:"img/father.jpg"},
@@ -115,94 +106,72 @@ const characters = {
   author:{name:"Автор",side:"left",avatar:"img/author.jpg"},
   olivia:{name:"Оливия",side:"left",avatar:"img/olivia.jpg"},
   mother:{name:"Мама",side:"left",avatar:"img/mother.jpg"},
-  seller:{name:"Продавец",side:"left",avatar:"img/seller.jpg"}
+  seller:{name:"Продавец",side:"left",avatar:"img/seller.jpg"},
+  guest:{name:"Гость",side:"left",avatar:"img/guest.jpg"},
+  teacher:{name:"Учитель",side:"left",avatar:"img/teacher.jpg"},
+  chris:{name:"Крис",side:"left",avatar:"img/chris.jpg"}
 };
 
-/* ===== ИСТОРИЯ (ПОКА МОЖЕТ БЫТЬ ПУСТОЙ) ===== */
+/* ===== ИСТОРИЯ (ПУСТОЙ МАССИВ) ===== */
 const story = [
-  // { char:"author", text:"Начало истории" },
-  // { char:"author", video:"video/scene1.mp4" },
-  // {
-  //   choices:[
-  //     { text:"Выбор 1", next:3 },
-  //     { text:"Выбор 2", next:5 }
-  //   ]
-  // },
-  // { char:"ella", text:"Что происходит?" }
+  // Здесь будут добавляться шаги истории
 ];
 
 /* ===== ЛОГИКА ===== */
 let index = 0;
 const chat = document.getElementById("chat");
 const tap = document.getElementById("tap");
-const choicesBox = document.getElementById("choices");
+const background = document.getElementById("background");
 
 tap.onclick = nextStep;
 
-function nextStep(){
+function nextStep() {
   if(index >= story.length) return;
 
   const step = story[index];
-
-  /* ВЫБОРЫ */
-  if(step.choices){
-    tap.style.display="none";
-    choicesBox.style.display="flex";
-    choicesBox.innerHTML="";
-    step.choices.forEach(c=>{
-      const btn=document.createElement("div");
-      btn.className="choice";
-      btn.textContent=c.text;
-      btn.onclick=()=>{
-        choicesBox.style.display="none";
-        tap.style.display="block";
-        index=c.next;
-        nextStep();
-      };
-      choicesBox.appendChild(btn);
-    });
-    return;
-  }
-
   const char = characters[step.char];
 
-  const bubble=document.createElement("div");
-  bubble.className="bubble "+char.side;
+  const bubble = document.createElement("div");
+  bubble.className = "bubble " + (char ? char.side : "left");
 
-  const avatar=document.createElement("img");
-  avatar.src=char.avatar;
-  avatar.className="avatar";
-  bubble.appendChild(avatar);
+  if(char && char.avatar){
+    const avatar = document.createElement("img");
+    avatar.src = char.avatar;
+    avatar.className = "avatar";
+    bubble.appendChild(avatar);
+  }
 
-  /* ВИДЕО КАК СООБЩЕНИЕ */
+  /* Видео */
   if(step.video){
-    const v=document.createElement("video");
-    v.src=step.video;
-    v.controls=true;
+    const v = document.createElement("video");
+    v.src = step.video;
+    v.controls = true;
     bubble.appendChild(v);
   }
 
-  /* КАРТИНКА КАК СООБЩЕНИЕ */
+  /* Картинка */
   if(step.image){
-    const img=document.createElement("img");
-    img.src=step.image;
-    img.className="media";
+    const img = document.createElement("img");
+    img.src = step.image;
+    img.className = "media";
     bubble.appendChild(img);
+
+    // меняем фон экрана
+    background.style.backgroundImage = `url(${step.image})`;
   }
 
-  /* ТЕКСТ */
+  /* Текст */
   if(step.text){
-    const msg=document.createElement("div");
-    msg.className="msg";
-    msg.textContent=char.name+": "+step.text;
+    const msg = document.createElement("div");
+    msg.className = "msg";
+    msg.textContent = (char ? char.name : "Автор") + ": " + step.text;
     bubble.appendChild(msg);
   }
 
   chat.appendChild(bubble);
   index++;
-  window.scrollTo(0,document.body.scrollHeight);
+  window.scrollTo(0, document.body.scrollHeight);
 }
 </script>
-
 </body>
 </html>
